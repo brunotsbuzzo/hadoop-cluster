@@ -120,3 +120,13 @@ RUN apt-get update \
     # Configurando o JAVA_HOME para os processos localizarem a instalação do Java
     && echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/environment
 
+
+# --------------------------------------------------------------------------
+# Keys dos nodes. Necessarias para se comunicarem por SSH
+COPY /config/config /root/.ssh
+
+RUN ssh-keygen -t rsa -P 'secret' -f ~/.ssh/id_rsa \
+    && cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys \
+    && chmod 600 ~/.ssh/authorized_keys \
+    && chmod 600 /root/.ssh/config
+
