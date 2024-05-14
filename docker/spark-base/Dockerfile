@@ -96,4 +96,12 @@ RUN apt-get update \
     && ln -s /usr/share/mariadb-java-client.jar ${HADOOP_HOME}/share/hadoop/common/lib/ \
     && ln -s /usr/share/mariadb-java-client.jar ${HIVE_HOME}/lib/mariadb-java-client.jar \
     # Criando diretório para jars externos do Hive e baixando suporte a parquet
-    && wget https://repo1.maven.org/maven2/com/twitter/parquet-avro/1.6.0/parquet-avro-1.6.0.jar -P /usr/hive/aux_jars/
+    && wget https://repo1.maven.org/maven2/com/twitter/parquet-avro/1.6.0/parquet-avro-1.6.0.jar -P /usr/hive/aux_jars/ \
+    # --------------------------------------------------------------------------
+    # INSTALACAO DO ZOOKEEPER
+    && wget https://archive.apache.org/dist/zookeeper/zookeeper-${ZOOKEEPER_VERSION}/apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz -O /tmp/apache-zookeeper.tar.gz \
+    && wget https://archive.apache.org/dist/zookeeper/zookeeper-${ZOOKEEPER_VERSION}/apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz.asc -O /tmp/apache-zookeeper.tar.gz.asc \
+    && gpg --verify /tmp/apache-zookeeper.tar.gz.asc \
+    && tar -xvf /tmp/apache-zookeeper.tar.gz -C /tmp/ \
+    && mv /tmp/apache-zookeeper-${ZOOKEEPER_VERSION}-bin /usr/apache-zookeeper-${ZOOKEEPER_VERSION}-bin \
+    && mkdir /var/lib/zookeeper
