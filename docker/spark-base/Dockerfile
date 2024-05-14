@@ -3,7 +3,7 @@ FROM openjdk:11
 # Variaveis de ambiente do Hadoop
 ENV HADOOP_VERSION 3.4.0
 ENV HADOOP_MINOR_VERSION 3
-ENV HADOOP_HOME /usr/hadoop-$HADOOP_VERSION
+ENV HADOOP_HOME /opt/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 
 # Variaveis de ambiente do Hive
@@ -59,5 +59,15 @@ RUN apt-get update \
     && python3 -m pip install --upgrade toree \
     && python3 -m bash_kernel.install \
     && python3 -c "import nltk; nltk.download('stopwords')"\
-    && mkdir datasets
-
+    && mkdir datasets \
+    # --------------------------------------------------------------------------
+    # INSTALACAO DO HADOOP
+    && wget http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O /tmp/hadoop.tar.gz \
+    && wget http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz.asc -O /tmp/hadoop.tar.gz.asc \
+    && gpg --verify /tmp/hadoop.tar.gz.asc \
+    && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
+    && rm /tmp/hadoop.tar.gz* \
+    && ln -s /opt/hadoop-${HADOOP_VERSION}/etc/hadoop ${HADOOP_CONF_DIR} \
+    && rm -rf ${HADOOP_HOME}/share/doc \
+    && chown -R root:root ${HADOOP_HOME}
+    
