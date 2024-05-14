@@ -1,4 +1,4 @@
-FROM amd64/openjdk:11
+FROM openjdk:11
 
 # Variaveis de ambiente do Hadoop
 ENV HADOOP_VERSION 3.4.0
@@ -48,3 +48,16 @@ ENV PYTHONPATH $SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:/us
 ENV PATH $PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:$PYTHONPATH:$HIVE_HOME/bin:$KAFKA_HOME/bin:$SCALA_HOME/bin
 
 COPY /config/jupyter/requirements.txt /
+
+# Ajustes e instalação dos componentes do cluster
+RUN apt-get update \
+    && apt-get install -y wget vim ssh openssh-server curl iputils-ping \
+    python3 python3-pip python3-dev \
+    build-essential libssl-dev libffi-dev libpq-dev mariadb-server libmariadb-java \
+    && python3 -m pip install -r requirements.txt \
+    && python3 -m pip install dask[bag] --upgrade \
+    && python3 -m pip install --upgrade toree \
+    && python3 -m bash_kernel.install \
+    && python3 -c "import nltk; nltk.download('stopwords')"\
+    && mkdir datasets
+
