@@ -125,7 +125,7 @@ RUN apt-get update \
 # Keys dos nodes. Necessarias para se comunicarem por SSH
 COPY /config/config /root/.ssh
 
-RUN ssh-keygen -t rsa -P 'secret' -f ~/.ssh/id_rsa \
+RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa \
     && cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys \
     && chmod 600 ~/.ssh/authorized_keys \
     && chmod 600 /root/.ssh/config
