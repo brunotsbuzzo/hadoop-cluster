@@ -104,4 +104,10 @@ RUN apt-get update \
     && gpg --verify /tmp/apache-zookeeper.tar.gz.asc \
     && tar -xvf /tmp/apache-zookeeper.tar.gz -C /tmp/ \
     && mv /tmp/apache-zookeeper-${ZOOKEEPER_VERSION}-bin /usr/apache-zookeeper-${ZOOKEEPER_VERSION}-bin \
-    && mkdir /var/lib/zookeeper
+    && mkdir /var/lib/zookeeper \
+    # --------------------------------------------------------------------------
+    # INSTALACAO DO SCALA
+    && wget https://downloads.lightbend.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.tgz -O /tmp/scala.tgz \
+    && tar -zvxf /tmp/scala.tgz -C /tmp/ \
+    && mkdir ${SCALA_HOME} \
+    && mv /tmp/scala-${SCALA_VERSION} ${SCALA_HOME} \
