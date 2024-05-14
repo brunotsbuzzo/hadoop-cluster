@@ -111,3 +111,12 @@ RUN apt-get update \
     && tar -zvxf /tmp/scala.tgz -C /tmp/ \
     && mkdir ${SCALA_HOME} \
     && mv /tmp/scala-${SCALA_VERSION} ${SCALA_HOME} \
+    # --------------------------------------------------------------------------
+    # INSTALACAO DO KAFKA
+    && wget https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_KAFKA_VERSION}.tgz -O /tmp/kafka.tgz \
+    && tar -zvxf /tmp/kafka.tgz -C /tmp/ \
+    && mkdir ${KAFKA_HOME} \
+    && mv /tmp/kafka_${SCALA_KAFKA_VERSION} ${KAFKA_HOME} \
+    # Configurando o JAVA_HOME para os processos localizarem a instalação do Java
+    && echo "export JAVA_HOME=${JAVA_HOME}" >> /etc/environment
+
