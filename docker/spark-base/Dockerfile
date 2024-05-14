@@ -44,8 +44,8 @@ ENV PYSPARK_DRIVER_PYTHON=python3
 # ENV PYSPARK_DRIVER_PYTHON_OPTS='notebook'
 
 # Adicao de valores aos paths abaixo para que os componentes os localizem
-ENV PYTHONPATH $SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:/usr/bin/python3
-ENV PATH $PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:$PYTHONPATH:$HIVE_HOME/bin:$KAFKA_HOME/bin:$SCALA_HOME/bin
+ENV PYTHONPATH $SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:/usr/bin/python3
+ENV PATH $PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin:$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH:$HIVE_HOME/bin:$KAFKA_HOME/bin:$SCALA_HOME/bin
 
 COPY /config/jupyter/requirements.txt /
 
@@ -69,5 +69,15 @@ RUN apt-get update \
     && rm /tmp/hadoop.tar.gz* \
     && ln -s ${HADOOP_CONF_DIR} ${HADOOP_CONF_DIR} \
     && rm -rf ${HADOOP_HOME}/share/doc \
-    && chown -R root:root ${HADOOP_HOME}
-    
+    && chown -R root:root ${HADOOP_HOME} \
+    # --------------------------------------------------------------------------
+    # INSTALACAO DO SPARK
+    && wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}.tgz -O /tmp/spark.tar.gz \
+    && wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}.tgz.asc -O /tmp/spark.tar.gz.asc \
+    && gpg --verify /tmp/spark.tar.gz.asc \
+    && tar -xvf /tmp/spark.tar.gz -C /tmp/ \
+    && mkdir ${SPARK_HOME} \
+    && cp -r /tmp/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}/* -C /tmp/${SPARK_HOME} \
+    && rm -rf /tmp/spark* \
+    && chmod -R 777 ${SPARK_HOME} \
+    && chown -R root:root ${SPARK_HOME}
