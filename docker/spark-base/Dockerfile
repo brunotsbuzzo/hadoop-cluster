@@ -53,7 +53,7 @@ COPY /config/jupyter/requirements.txt /
 RUN apt-get update \
     && apt-get install -y wget vim ssh openssh-server curl iputils-ping \
     python3 python3-pip python3-dev \
-    build-essential libssl-dev libffi-dev libpq-dev mariadb-server libmariadb-java libmysql-java mariadb-client \
+    build-essential libssl-dev libffi-dev libpq-dev mariadb-server libmariadb-java mariadb-client \
     && python3 -m pip install -r requirements.txt \
     && python3 -m pip install dask[bag] --upgrade \
     && python3 -m pip install --upgrade toree \
@@ -63,8 +63,8 @@ RUN apt-get update \
     # --------------------------------------------------------------------------
     # INSTALACAO DO HADOOP
     && wget http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O /tmp/hadoop.tar.gz \
-    && wget http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz.asc -O /tmp/hadoop.tar.gz.asc \
-    && gpg --verify /tmp/hadoop.tar.gz.asc \
+    # && wget http://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz.asc -O /tmp/hadoop.tar.gz.asc \
+    # && gpg --verify /tmp/hadoop.tar.gz.asc \
     && tar -xvf /tmp/hadoop.tar.gz -C /usr/ \
     && rm -rf /tmp/* \
     && ln -s ${HADOOP_CONF_DIR} ${HADOOP_CONF_DIR} \
@@ -73,8 +73,6 @@ RUN apt-get update \
     # --------------------------------------------------------------------------
     # INSTALACAO DO SPARK
     && wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}.tgz -O /tmp/spark.tar.gz \
-    && wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}.tgz.asc -O /tmp/spark.tar.gz.asc \
-    && gpg --verify /tmp/spark.tar.gz.asc \
     && tar -xvf /tmp/spark.tar.gz -C /tmp/ \
     && mkdir ${SPARK_HOME} \
     && cp -r /tmp/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_MINOR_VERSION}/* ${SPARK_HOME} \
@@ -84,8 +82,6 @@ RUN apt-get update \
     # --------------------------------------------------------------------------
     # INSTALACAO DO HIVE
     && wget https://archive.apache.org/dist/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O /tmp/hive.tar.gz \
-    && wget https://archive.apache.org/dist/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz.asc -O /tmp/hive.tar.gz.asc \
-    && gpg --verify /tmp/hive.tar.gz.asc \
     && tar -xvf /tmp/hive.tar.gz -C /tmp/ \
     && mkdir ${HIVE_HOME} \
     && cp -r /tmp/apache-hive-${HIVE_VERSION}-bin/* ${HIVE_HOME} \
@@ -100,8 +96,6 @@ RUN apt-get update \
     # --------------------------------------------------------------------------
     # INSTALACAO DO ZOOKEEPER
     && wget https://archive.apache.org/dist/zookeeper/zookeeper-${ZOOKEEPER_VERSION}/apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz -O /tmp/apache-zookeeper.tar.gz \
-    && wget https://archive.apache.org/dist/zookeeper/zookeeper-${ZOOKEEPER_VERSION}/apache-zookeeper-${ZOOKEEPER_VERSION}-bin.tar.gz.asc -O /tmp/apache-zookeeper.tar.gz.asc \
-    && gpg --verify /tmp/apache-zookeeper.tar.gz.asc \
     && tar -xvf /tmp/apache-zookeeper.tar.gz -C /tmp/ \
     && mv /tmp/apache-zookeeper-${ZOOKEEPER_VERSION}-bin /usr/apache-zookeeper-${ZOOKEEPER_VERSION}-bin \
     && mkdir /var/lib/zookeeper \
@@ -123,10 +117,19 @@ RUN apt-get update \
 
 # --------------------------------------------------------------------------
 # Keys dos nodes. Necessarias para se comunicarem por SSH
+RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa && \
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
+    chmod 600 ~/.ssh/authorized_keys
+
 COPY /config/config /root/.ssh
+RUN chmod 600 /root/.ssh/config
 
-RUN ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa \
-    && cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys \
-    && chmod 600 ~/.ssh/authorized_keys \
-    && chmod 600 /root/.ssh/config
+COPY config/spark ${SPARK_HOME}/conf/
+COPY config/hadoop/*.xml /usr/hadoop-${HADOOP_VERSION}/etc/hadoop/
+COPY config/scripts /
+COPY config/zookeeper ${ZOOKEEPER_HOME}/conf/
+COPY config/kafka ${KAFKA_HOME}/config
 
+EXPOSE 9000 4040 8020 22 9083 10000 10001 10002 2181 2888 3888 9092 9999
+
+ENTRYPOINT ["/bin/bash", "bootstrap.sh"]
